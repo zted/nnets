@@ -37,7 +37,7 @@ class Layer(object):
         activations = {'linear':(linear, linearPrime), 'relu':(relu, reluPrime), 'sigmoid':(sigmoid, sigmoidPrime), 'tanh':[tanh, tanhPrime]}
         self.input_dim = input_dim
         self.output_dim = output_dim
-        self.weights = np.random.rand(output_dim, input_dim)
+        self.weights = np.random.rand(input_dim, output_dim)
         # the +1 is for bias
         assert activation in activations.keys()
         self.activation = activations[activation][0]
@@ -59,7 +59,7 @@ class Layer(object):
     def compute_output(self, input):
         self.input = input
         # fix this later, only hidden layers have biases
-        self.matrix_product = np.dot(self.weights, input)
+        self.matrix_product = np.dot(input, self.weights)
         self.output = self.activation(self.matrix_product)
         return self.output
 
@@ -68,15 +68,17 @@ class Layer(object):
         if self.layer_type == 'last':
             self.delta = self.activationPrime(self.matrix_product) * delta_next
         else:
-            self.delta = np.dot(delta_next, weights_next) * self.activationPrime(self.matrix_product)
+            self.delta = np.dot(delta_next, weights_next.T) * self.activationPrime(self.matrix_product)
         return self.delta
 
     def compute_gradient(self):
-        self.gradient = np.array([self.delta]).T * np.array([self.input])
+        self.gradient = np.dot(self.delta.T, self.input)
         return self.gradient
 
     def update_weight(self):
-        self.weights += self.learning_rate*self.gradient
+        print self.gradient.shape
+        print self.weights.shape
+        self.weights += self.learning_rate*self.gradient.T
         return
 
 
@@ -102,9 +104,9 @@ class Network(object):
 
 
 a = Layer(6, 5, layer_type='first')
-b = Layer(2, 6, layer_type='last')
-x = np.array([0.7, 0.2, -0.5, 0.1, 0.5])
-y = np.array([1.0, 0.0])
+b = Layer(3, 6, layer_type='last')
+x = np.array([[0.7, 0.2, -0.5, 0.1, 0.5], [0.3, -0.2, 0.3, -0.7, 0.4]])
+y = np.array([[1.0, 0.0, 0.0],[1.0, 1.0, 0.0]])
 
 model = Network()
 model.addLayer(a)
