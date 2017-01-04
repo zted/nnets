@@ -1,40 +1,10 @@
 import numpy as np
-
-
-def sigmoid(x):
-    return 1 / (1 + np.exp(-x))
-
-
-def sigmoidPrime(x):
-    return sigmoid(x) * (1 - sigmoid(x))
-
-
-def relu(x):
-    return np.max([x, np.zeros(x.shape)], axis=0)
-
-def reluPrime(x):
-    tmp = relu(x)
-    return tmp/tmp
-
-def tanh(x):
-    numer = np.exp(x) - np.exp(-x)
-    denom = np.exp(x) + np.exp(-x)
-    return numer/denom
-
-def tanhPrime(x):
-    tmp = tanh(x)
-    return 1-tmp*tmp
-
-
-def linear(x):
-    return x
-
-def linearPrime(x):
-    return np.ones(x.shape)
+import activations as A
 
 class Layer(object):
     def __init__(self, output_dim, input_dim, activation='tanh', layer_type='hidden'):
-        activations = {'linear':(linear, linearPrime), 'relu':(relu, reluPrime), 'sigmoid':(sigmoid, sigmoidPrime), 'tanh':[tanh, tanhPrime]}
+        activations = {'linear':(A.linear, A.linearPrime), 'relu':(A.relu, A.reluPrime),
+                       'sigmoid':(A.sigmoid, A.sigmoidPrime), 'tanh':[A.tanh, A.tanhPrime]}
         self.input_dim = input_dim
         self.output_dim = output_dim
         self.weights = np.random.rand(input_dim, output_dim)
@@ -76,8 +46,6 @@ class Layer(object):
         return self.gradient
 
     def update_weight(self):
-        print self.gradient.shape
-        print self.weights.shape
         self.weights += self.learning_rate*self.gradient.T
         return
 
