@@ -2,7 +2,7 @@ import numpy as np
 import activations as A
 
 class Layer(object):
-    def __init__(self, output_dim, input_dim, activation='tanh', layer_type='hidden'):
+    def __init__(self, input_dim, output_dim, activation='tanh', layer_type='hidden'):
         activations = {'linear':(A.linear, A.linearPrime), 'relu':(A.relu, A.reluPrime),
                        'sigmoid':(A.sigmoid, A.sigmoidPrime), 'tanh':[A.tanh, A.tanhPrime]}
         self.input_dim = input_dim
@@ -19,7 +19,7 @@ class Layer(object):
         self.delta_next = None
         self.gradient = None
         self.output = None
-        self.learning_rate = 0.5
+        self.learning_rate = 0.2
         assert layer_type in ['first','last','hidden']
         self.layer_type = layer_type
 
@@ -71,24 +71,30 @@ class Network(object):
         return diff
 
 
-a = Layer(6, 5, layer_type='first')
-b = Layer(3, 6, layer_type='last')
+a = Layer(5, 4, layer_type='first')
+b = Layer(4, 4)
+c = Layer(4, 3, layer_type='last')
+
 x = np.array([[0.7, 0.2, -0.5, 0.1, 0.5], [0.3, -0.2, 0.3, -0.7, 0.4]])
 y = np.array([[1.0, 0.0, 0.0],[1.0, 1.0, 0.0]])
 
 model = Network()
 model.addLayer(a)
 model.addLayer(b)
-for i in range(0, 20):
+model.addLayer(c)
+for i in range(0, 50):
     ans = model.compute_output(x)
     if i == 0:
         print "First answer: {}".format(ans)
     error = model.compute_error(x, y)
-    b_delta = b.compute_delta(error)
+    c_delta = c.compute_delta(error)
+    c_gradient = c.compute_gradient()
+    b_delta = b.compute_delta(c_delta, c.weights)
     b_gradient = b.compute_gradient()
     a_delta = a.compute_delta(b_delta, b.weights)
     a_gradient = a.compute_gradient()
     a.update_weight()
     b.update_weight()
+    c.update_weight()
     print np.sum(error*error)
 print ans
